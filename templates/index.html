@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParcelPilot — Courier & Parcel Tracking Assistant</title>
+<style>
+  :root {
+    --bg: #fff7ed;
+    --panel: #ffffff;
+    --header: #1c1917;
+    --accent: #ea580c;
+    --accent-2: #c2410c;
+    --line: #f1e4d4;
+    --text: #292524;
+    --text-dim: #78716c;
+    --user-bubble: linear-gradient(135deg, #ea580c, #c2410c);
+    --bot-bubble: #fff1e0;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background:
+      repeating-linear-gradient(45deg, rgba(234,88,12,0.04) 0 12px, transparent 12px 24px),
+      var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 560px;
+    height: 90vh;
+    max-height: 780px;
+    background: var(--panel);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 18px 45px rgba(28,25,23,0.18);
+    border: 1px solid var(--line);
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--header);
+    color: #fff;
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-size: 17px;
+    margin: 0;
+    color: #fff;
+  }
+
+  header p {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.65);
+  }
+
+  .badge {
+    margin-left: auto;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--header);
+    background: var(--accent);
+    padding: 5px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+  }
+
+  .track-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    background: #fff1e0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 10.5px;
+    color: var(--accent-2);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  #chat-window {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  #chat-window::-webkit-scrollbar { width: 6px; }
+  #chat-window::-webkit-scrollbar-thumb {
+    background: rgba(234,88,12,0.2);
+    border-radius: 8px;
+  }
+
+  .msg {
+    max-width: 82%;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    animation: pop 0.2s ease;
+  }
+
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.bot {
+    align-self: flex-start;
+    background: var(--bot-bubble);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 4px;
+    color: var(--text);
+  }
+
+  .msg.bot::before {
+    content: "📦 ParcelPilot";
+    display: block;
+    color: var(--accent-2);
+    font-size: 10.5px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .msg.user {
+    align-self: flex-end;
+    background: var(--user-bubble);
+    border-bottom-right-radius: 4px;
+    color: #fff;
+  }
+
+  .typing {
+    align-self: flex-start;
+    display: flex;
+    gap: 5px;
+    padding: 14px 16px;
+    background: var(--bot-bubble);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    border-bottom-left-radius: 4px;
+  }
+
+  .typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1.2s infinite;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.25; }
+    40% { opacity: 1; }
+  }
+
+  form#chat-form {
+    display: flex;
+    gap: 10px;
+    padding: 16px;
+    background: #fffaf3;
+    border-top: 1px solid var(--line);
+  }
+
+  #user-input {
+    flex: 1;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: var(--text);
+    font-size: 14.5px;
+    outline: none;
+    resize: none;
+  }
+
+  #user-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(234,88,12,0.12);
+  }
+
+  #send-btn {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  #send-btn:hover { transform: scale(1.06); }
+  #send-btn:active { transform: scale(0.94); }
+
+  .disclaimer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 6px 16px 14px;
+    background: #fffaf3;
+  }
+</style>
+</head>
+<body>
+
+  <div class="app">
+    <header>
+      <div class="logo">📦</div>
+      <div>
+        <h1>ParcelPilot</h1>
+        <p>Courier & Parcel Tracking Assistant</p>
+      </div>
+      <div class="badge">LOGISTICS</div>
+    </header>
+    <div class="track-strip">
+      <span>● BOOKED</span><span>● IN TRANSIT</span><span>● OUT FOR DELIVERY</span><span>● DELIVERED</span>
+    </div>
+
+    <div id="chat-window">
+      <div class="msg bot">Hi, I'm ParcelPilot 📦 Ask me anything about courier services, parcel tracking stages, shipping, or logistics concepts.</div>
+    </div>
+
+    <form id="chat-form">
+      <textarea id="user-input" rows="1" placeholder="Ask a courier or tracking question..." autocomplete="off"></textarea>
+      <button type="submit" id="send-btn">➤</button>
+    </form>
+    <div class="disclaimer">ParcelPilot only answers courier & parcel tracking study questions.</div>
+  </div>
+
+<script>
+  const chatWindow = document.getElementById('chat-window');
+  const form = document.getElementById('chat-form');
+  const input = document.getElementById('user-input');
+
+  function addMessage(text, sender) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + sender;
+    div.textContent = text;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'typing';
+    div.id = 'typing-indicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  async function sendMessage(message) {
+    showTyping();
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json();
+      hideTyping();
+      addMessage(data.reply || "Sorry, something went wrong.", 'bot');
+    } catch (err) {
+      hideTyping();
+      addMessage("Network error. Please check your connection and try again.", 'bot');
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, 'user');
+    input.value = '';
+    input.style.height = 'auto';
+    sendMessage(text);
+  });
+
+  // Enter to send, Shift+Enter for new line
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  // Auto-resize textarea
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+</script>
+
+</body>
+</html>
